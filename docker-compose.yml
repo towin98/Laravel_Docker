@@ -12,7 +12,7 @@ services:
       - ./nginx/default.conf:/etc/nginx/conf.d/default.conf:ro
     depends_on:
       - php
-      - mysql
+      # - mysql
     container_name: laravel_server
     networks:
       - laravel_network
@@ -26,35 +26,51 @@ services:
     container_name: laravel_php
     networks:
       - laravel_network
-    
-  mysql:
-    image: mysql:8.0.1
-    restart: unless-stopped
-    tty: true
-    container_name: laravel_mysql
-    env_file:
-      - mysql/.env
-    ports:
-      - 3306:3306
-    networks:
-      - laravel_network
-    volumes:
-      - ./mysql_data:/var/lib/mysql
-
-  phpmyadmin:
-    image: phpmyadmin/phpmyadmin:latest
+  
+  mssql:
+    container_name: laravel_sql_server
+    image: mcr.microsoft.com/mssql/server:2019-latest
     restart: always
-    container_name: laravel_phpmyadmin
-    depends_on:
-      - mysql
-    ports:
-      - 8090:80
     environment:
-      - PMA_HOST=mysql
-      - PMA_USER=root
-      - PMA_PASSWORD=root.pa55
+      ACCEPT_EULA: "Y"
+      SA_PASSWORD: "YourStrong#Password"
+    ports:
+      - 1433:1433
+    volumes:
+      - ./data_sql_server:/var/opt/mssql/data
     networks:
       - laravel_network
+
+
+
+  # mysql:
+  #   image: mysql:8.0.1
+  #   restart: unless-stopped
+  #   tty: true
+  #   container_name: laravel_mysql
+  #   env_file:
+  #     - mysql/.env
+  #   ports:
+  #     - 3306:3306
+  #   networks:
+  #     - laravel_network
+  #   volumes:
+  #     - ./mysql_data:/var/lib/mysql
+
+  # phpmyadmin:
+  #   image: phpmyadmin/phpmyadmin:latest
+  #   restart: always
+  #   container_name: laravel_phpmyadmin
+  #   depends_on:
+  #     - mysql
+  #   ports:
+  #     - 8090:80
+  #   environment:
+  #     - PMA_HOST=mysql
+  #     - PMA_USER=root
+  #     - PMA_PASSWORD=root.pa55
+  #   networks:
+  #     - laravel_network
 
   composer:
     build:
