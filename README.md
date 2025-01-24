@@ -1,6 +1,16 @@
 ## Pasos para crear proyecto con docker
 
 Este es un crud basico utilizando docker y sql server
+El proyecto esta construido de la siguiente manera:
+
+1. Autenticación de usuario segura vía Laravel/Breeze.
+2. ⁠Presentación de un home con un menú básico.
+3. ⁠Creación de un CRUD con todas sus características.
+4. ⁠Generación de un reporte con datos masivos, por lo menos 30.000 registros, 
+utilizando trabajos de segundo plano (worker).
+"Para los 30.000 registros se creo un seeder"
+5. ⁠Generación de un reporte sencillo en PDF. "Utilizando DomPdf"
+6. ⁠Manejo de peticiones seguras (form request). "Validacion de datos"
 
 ## 1 
 
