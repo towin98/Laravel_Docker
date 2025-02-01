@@ -17,9 +17,10 @@ class TecnologiaFactory extends Factory
     public function definition(): array
     {
         return [
-            'nombre' => $this->faker->sentence(2),
-            'descripcion' => $this->faker->paragraph(1),
-            'estado' => $this->faker->randomElement(['ACTIVO', 'INACTIVO'])
+            'nombre'        => $this->faker->sentence(2),
+            'descripcion'   => $this->faker->paragraph(1),
+            'estado'        => $this->faker->randomElement(['ACTIVO', 'INACTIVO']),
+            'pdf'           => null
         ];
     }
 }

@@ -1,0 +1,23 @@
+
+services:
+  minio:
+    image: minio/minio
+    container_name: laravel_minio
+    ports:
+      - "9000:9000" #Puerto de conexion con la api
+      - "9001:9001" #Browser insterfaz
+    environment:
+      MINIO_ROOT_USER: minio
+      MINIO_ROOT_PASSWORD: supersecret
+    volumes:
+      - minio_data:/data
+    command: server --console-address ":9001" /data
+    # networks:
+    #   - laravel_network  # Usamos la red ya existente
+
+volumes:
+  minio_data:
+
+# networks:
+#   laravel_network:
+#     external: true  # Indica que la red ya existe y no se creará de nuevo

@@ -1,7 +1,7 @@
 @props(['id', 'color'])
 
 <div role="alert" id="{{ $id }}"
-    {!! $attributes->merge(['class' => "mb-4 opacity-95 relative flex w-full p-3 text-sm text-white bg-{$color}-500 rounded-md"]) !!}>
+    {{ $attributes->merge(['class' => 'mb-4 opacity-95 relative flex w-full p-3 text-sm text-white rounded-md']) }}>
     {{ $slot }}
     <button
         class="flex items-center justify-center transition-all w-8 h-8 rounded-md text-white hover:bg-white/10 active:bg-white/10 absolute top-1.5 right-1.5"

@@ -70,15 +70,9 @@
             </tr>
         </thead>
         <tbody>
-            @foreach ($data as $item)
-                <tr>
-                    <td>{{ $item['id'] }}</td>
-                    <td>{{ $item['nombre'] }}</td>
-                    <td>{{ $item['descripcion'] }}</td>
-                    <td>{{ $item['estado'] }}</td>
-                </tr>
-            @endforeach
+            {!! $tabla !!}
         </tbody>
+
     </table>
 
     <div class="footer">
