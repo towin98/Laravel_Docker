@@ -15,8 +15,15 @@
 
         <!-- Scripts -->
         @vite(['resources/css/app.css', 'resources/js/app.js'])
+        <link href="{{ asset('css/loading.css') }}" rel="stylesheet">
+        @stack('styles')
     </head>
     <body class="font-sans antialiased">
+
+        <div id="loading" class="loading-state" style="display: none">
+            <div class="loading"></div>
+        </div>
+
         <div class="min-h-screen">
             @include('layouts.navigation')
 
@@ -34,5 +41,8 @@
                 {{ $slot }}
             </main>
         </div>
+        {{-- PARA MODAL --}}
+        <script src="https://unpkg.com/@material-tailwind/html@latest/scripts/dialog.js"></script>
+        @stack('scripts')
     </body>
 </html>

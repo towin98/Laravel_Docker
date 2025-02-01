@@ -17,7 +17,7 @@ class RouteServiceProvider extends ServiceProvider
      *
      * @var string
      */
-    public const HOME = '/dashboard/0/10';
+    public const HOME = '/laravel-datatables';
 
     /**
      * Define your route model bindings, pattern filters, and other route configuration.

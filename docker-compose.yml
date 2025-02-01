@@ -26,6 +26,16 @@ services:
     container_name: laravel_php
     networks:
       - laravel_network
+
+  node:
+    image: node:18
+    working_dir: /var/www/html
+    volumes:
+      - ./src:/var/www/html
+    command: sh -c "npm install && npm run dev"
+    container_name: laravel_node
+    networks:
+      - laravel_network
   
   mssql:
     container_name: laravel_sql_server

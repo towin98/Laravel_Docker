@@ -11,5 +11,5 @@ class Tecnologia extends Model
 
     protected $table = 'tecnologias';
 
-    protected $fillable = ['nombre', 'descripcion', 'estado'];
+    protected $fillable = ['nombre', 'descripcion', 'pdf', 'estado'];
 }
