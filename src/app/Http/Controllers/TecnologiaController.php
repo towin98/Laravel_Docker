@@ -58,7 +58,6 @@ class TecnologiaController extends Controller
                 $order = $request->order;
             }
 
-            //COMO HAGO PARA PAGINAR DEPENDIENDO DE LA BUSQUEDA
             $totalRecords = Tecnologia::select(['id', 'nombre', 'descripcion', 'estado', 'pdf'])
                 ->where(function ($query) use ($request) {
                     if ($request->has('search') && $request->search!= '') {
@@ -113,8 +112,11 @@ class TecnologiaController extends Controller
                 'estado' => $request->estado
             ]);
 
-            $pdfPath = $request->file('pdf')->storeAs($this->carpetaSubirPdf, 'tecnologia_'.$tecnology->id . '.pdf');
-            $tecnology->update(['pdf' => $pdfPath]);
+            if ($request->filled('pdf')) {
+                $pdfPath = $request->file('pdf')->storeAs($this->carpetaSubirPdf, 'tecnologia_'.$tecnology->id . '.pdf');
+                $tecnology->update(['pdf' => $pdfPath]);
+            }
+
             return redirect()->route('laravel-datatable')->with('success', 'Se creo con exito');
         } catch (Exception $e) {
             return view('tecnologias.show', ['error' => 'Hubo un error al crear.']);
@@ -179,12 +181,10 @@ class TecnologiaController extends Controller
             $tecnologia = Tecnologia::findOrFail($id);
             $tecnologia->delete();
             return redirect()
-                // ->route('tecnologias.index', ['skip' => 0, 'take' => 10])
                 ->route('laravel-datatable')
                 ->with('success', 'La tecnología ha sido eliminada correctamente');
         } catch (Exception $e) {
             return redirect()
-                // ->route('tecnologias.index', ['skip' => 0, 'take' => 10])
                 ->route('laravel-datatable')
                 ->with('error', 'Hubo un error al eliminar la tecnología');
         }
@@ -218,12 +218,10 @@ class TecnologiaController extends Controller
             $params = ['tipo' => "XLSX"];
             GenerateReportJob::dispatch($params);
             return redirect()
-                // ->route('tecnologias.index', ['skip' => 0, 'take' => 10])
                 ->route('laravel-datatable')
                 ->with('success', 'El reporte se esta generando en segundo plano.');
         } catch (Exception $e) {
             return redirect()
-                // ->route('tecnologias.index', ['skip' => 0, 'take' => 10])
                 ->route('laravel-datatable')
                 ->with('error', 'Hubo un error generar reporte en segundo plano.');
         }
@@ -280,7 +278,6 @@ class TecnologiaController extends Controller
             return $pdf->download('TECNOLOGIAS_PAGINADO' . date('YmdHis') . '.pdf');
         } catch (Exception $e) {
             return redirect()
-                // ->route('tecnologias.index', ['skip' => 0, 'take' => 10])
                 ->route('laravel-datatable')
                 ->with('error', 'Hubo un error al reporte PDF.' . $e);
         }
@@ -340,7 +337,6 @@ class TecnologiaController extends Controller
 
         $htmlTable = ''; // Variable para construir solo las filas de la tabla
 
-        //COMO HAGO PARA PAGINAR DEPENDIENDO DE LA BUSQUEDA
         $tecnologias = Tecnologia::select(['id', 'nombre', 'descripcion', 'estado'])
             ->where(function ($query) use ($params) {
                 if ($params['search']!= '') {

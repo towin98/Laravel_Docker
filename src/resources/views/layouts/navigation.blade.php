@@ -5,7 +5,6 @@
             <div class="flex">
                 <!-- Logo -->
                 <div class="shrink-0 flex items-center">
-                    {{-- <a href="{{ route('tecnologias.index', ['skip' => 0, 'take' => 10]) }}"> --}}
                     <a href="{{ route('laravel-datatable') }}">
                         <x-application-logo class="block h-9 w-auto fill-current text-gray-800" />
                     </a>
@@ -13,9 +12,20 @@
 
                 <!-- Navigation Links -->
                 <div class="hidden space-x-8 sm:-my-px sm:ms-10 sm:flex">
-                    {{-- <x-nav-link :href="route('tecnologias.index', ['skip' => 0, 'take' => 10])" :active="request()->routeIs('tecnologias.index')"> --}}
                     <x-nav-link :href="route('laravel-datatable')" :active="request()->routeIs('laravel-datatable')">
                         {{ __('Dashboard') }}
+                    </x-nav-link>
+                </div>
+
+                <div class="hidden space-x-8 sm:-my-px sm:ms-10 sm:flex">
+                    <x-nav-link :href="route('users.list')" :active="request()->routeIs('users.list')">
+                        {{ __('Usuarios') }}
+                    </x-nav-link>
+                </div>
+
+                <div class="hidden space-x-8 sm:-my-px sm:ms-10 sm:flex">
+                    <x-nav-link :href="route('users.tustecnologias')" :active="request()->routeIs('users.tustecnologias')">
+                        {{ __('Tus tecnologías') }}
                     </x-nav-link>
                 </div>
             </div>
@@ -69,7 +79,6 @@
     <!-- Responsive Navigation Menu -->
     <div :class="{'block': open, 'hidden': ! open}" class="hidden sm:hidden">
         <div class="pt-2 pb-3 space-y-1">
-            {{-- <x-responsive-nav-link :href="route('tecnologias.index', ['skip' => 0, 'take' => 10])" :active="request()->routeIs('tecnologias.index')"> --}}
             <x-responsive-nav-link :href="route('laravel-datatable')" :active="request()->routeIs('laravel-datatable')">
                 {{ __('Dashboard') }}
             </x-responsive-nav-link>
