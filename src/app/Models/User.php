@@ -41,4 +41,13 @@ class User extends Authenticatable
     protected $casts = [
         'email_verified_at' => 'datetime',
     ];
+
+    /**
+     * Recupera las tecnologías asociadas con el usuario.
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\BelongsToMany
+     */
+    public function tecnologias() {
+        return $this->belongsToMany(Tecnologia::class, 'tecnologia_user')->withTimestamps();;
+    }
 }
