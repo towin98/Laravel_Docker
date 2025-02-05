@@ -83,7 +83,16 @@
                 {{ __('Dashboard') }}
             </x-responsive-nav-link>
         </div>
-
+        <div class="pt-2 pb-3 space-y-1">
+        <x-nav-link :href="route('users.list')" :active="request()->routeIs('users.list')">
+            {{ __('Usuarios') }}
+        </x-nav-link>
+    </div>
+        <div class="pt-2 pb-3 space-y-1">
+        <x-nav-link :href="route('users.tustecnologias')" :active="request()->routeIs('users.tustecnologias')">
+            {{ __('Tus tecnologías') }}
+        </x-nav-link>
+    </div>
         <!-- Responsive Settings Options -->
         <div class="pt-4 pb-1 border-t border-gray-200">
             <div class="px-4">

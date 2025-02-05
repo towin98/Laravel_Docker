@@ -112,9 +112,12 @@ class TecnologiaController extends Controller
                 'estado' => $request->estado
             ]);
 
-            if ($request->filled('pdf')) {
-                $pdfPath = $request->file('pdf')->storeAs($this->carpetaSubirPdf, 'tecnologia_'.$tecnology->id . '.pdf');
-                $tecnology->update(['pdf' => $pdfPath]);
+            if ($request->hasFile('pdf')) {
+                $nameFileNew = 'tecnologia_'. $tecnology->id . '_'.date('YmdHis').'.pdf';
+                $request->file('pdf')->storeAs($this->carpetaSubirPdf, $nameFileNew);
+                $tecnology->update([
+                    'pdf' => $this->carpetaSubirPdf."/".$nameFileNew
+                ]);
             }
 
             return redirect()->route('laravel-datatable')->with('success', 'Se creo con exito');
@@ -146,7 +149,7 @@ class TecnologiaController extends Controller
             $tecnologia = Tecnologia::findOrFail($id);
             $nameFileNew = 'tecnologia_'. $id . '_'.date('YmdHis').'.pdf';
 
-            if ($request->has('pdf')) {
+            if ($request->hasFile('pdf')) {
                 // Guardo el archivo en el bucket S3
                 $request->file('pdf')->storeAs($this->carpetaSubirPdf, $nameFileNew);
 
@@ -175,10 +178,19 @@ class TecnologiaController extends Controller
         }
     }
 
+    /**
+     * Elimina una tecnologia
+     *
+     * @param [type] $id TEcnología
+     * @return \Illuminate\Http\RedirectResponse
+     */
     public function destroy($id)
     {
         try {
             $tecnologia = Tecnologia::findOrFail($id);
+            if (Storage::disk('s3')->exists($tecnologia->pdf)) {
+                Storage::disk('s3')->delete($tecnologia->pdf);
+            }
             $tecnologia->delete();
             return redirect()
                 ->route('laravel-datatable')
