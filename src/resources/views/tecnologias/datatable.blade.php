@@ -7,10 +7,10 @@
             }
         </style>
     @endpush
-    <h3 class="text-center my-3 font-semibold leading-snug tracking-normal text-slate-800 mx-auto w-full text-lg max-w-md lg:max-w-xl lg:text-2xl">
-        Tecnologías
-    </h3>
-    <div class="container mx-auto">
+    <div class="container mx-auto flex flex-col rounded-lg bg-white shadow-sm p-2 my-6 border border-slate-200">
+        <h3 class="text-center mb-3 mt-1 font-semibold leading-snug tracking-normal text-slate-800 mx-auto w-full text-lg max-w-md lg:max-w-xl lg:text-2xl">
+            Tecnologías
+        </h3>
 
         <div class="w-1/2">
             @if (session('success'))
@@ -26,7 +26,7 @@
             @endif
         </div>
 
-        <div class="flex">
+        <div class="flex overflow-x-auto">
             <a href="{{ route('tecnologia.create') }}"
                 class="inline-flex items-center mx-1 px-4 mb-2 py-2 bg-gray-800 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-gray-700 focus:bg-gray-700 active:bg-gray-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 transition ease-in-out duration-150">
                 Nueva tecnología
@@ -54,30 +54,21 @@
             </button>
         </div>
 
-        <table id="example" class="display " style="width:100%">
-            <thead>
-                <tr>
-                    <th>ID</th>
-                    <th>NOMBRE</th>
-                    <th>DESCRIPCION</th>
-                    <th>ESTADO</th>
-                    <th>DESCARGAR</th>
-                    <th></th>
-                    <th></th>
-                </tr>
-            </thead>
-            {{-- <tfoot>
-                <tr>
-                    <th>ID</th>
-                    <th>NOMBRE</th>
-                    <th>DESCRIPCION</th>
-                    <th>ESTADO</th>
-                    <th>DESCARGAR</th>
-                    <th></th>
-                    <th></th>
-                </tr>
-            </tfoot> --}}
-        </table>
+        <div class="overflow-x-auto">
+            <table id="example" class="display " style="width:100%">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>NOMBRE</th>
+                        <th>DESCRIPCION</th>
+                        <th>ESTADO</th>
+                        <th>DESCARGAR</th>
+                        <th></th>
+                        <th></th>
+                    </tr>
+                </thead>
+            </table>
+        </div>
 
         <!-- Progress Bar -->
         <div data-dialog-backdrop="modal" data-dialog-backdrop-close="true" id="modal"
@@ -106,8 +97,8 @@
     </div>
 
     @push('scripts')
-        <script src="https://code.jquery.com/jquery-3.7.1.js"></script>
-        <script src="https://cdn.datatables.net/2.2.1/js/dataTables.js"></script>
+        <script src="{{ asset('js/dataTables/jquery-3.7.1.js') }}"></script>
+        <script src="{{ asset('js/dataTables/datatables.js') }}"></script>
         <script>
             //Variables para paginación
             let skip = 0;
@@ -145,13 +136,11 @@
                             dataType: 'json',
                             success: function(response) {
                                 // console.log("Respuesta del servidor:", response);
-                                callback(response); // Enviar datos a DataTables
-                                $('#example_processing').hide(); // Ocultando loader
+                                callback(response);
                                 document.getElementById('loading').style.display = 'none';
                             },
                             error: function(xhr, status, error) {
                                 console.error("Error en AJAX:", error);
-                                $('#example_processing').hide(); // Ocultar loader si hay error
                                 document.getElementById('loading').style.display = 'none';
                             }
                         });
@@ -274,7 +263,6 @@
                 fetch(`/generar-pdf?skip=${skip}&take=${take}&search=${searchValue}&orderColumn=${orderColumn}&order=${orderDescAsc}`)
                     .then(response => response.blob())
                     .then(blob  => {
-                        // console.log(blob );
                         let url = window.URL.createObjectURL(blob);
                         let a = document.createElement("a");
                         a.href = url;
