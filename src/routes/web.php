@@ -45,9 +45,13 @@ Route::middleware('auth')->group(function () {
     Route::delete('/tecnologias/{tecnologia}', [TecnologiaController::class, 'destroy'])->name('tecnologias.destroy');
     ##
 
+    ##SUBIR TECNOLOGIAS
+    Route::post('/tecnologias-import', [TecnologiaController::class,'importTecnologias'])->name('tecnologias.import');
+    ##
+
     ## ASIGNAR TECNOLOGIA A USUARIOS
     Route::get('/users-list', [UserController::class, 'index'])->name('users.list');
-    Route::get('/users', [UserController::class, 'usersList']);
+    Route::get('/users', [UserController::class, 'usersList'])->name('users.database');
     Route::get('/tecnologias-user/{user}', [UserController::class, 'tecnologiasUser']);
     Route::post('/asignar-tecnologia/{user}', [UserController::class, 'asignarTecnologia']);
 

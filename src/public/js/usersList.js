@@ -83,14 +83,14 @@ $(document).on('click', '.open-modal', function() {
     $('#titleModal').text(`TECNOLOGIAS - ${nombreUsuario}`);
     userId = $(this).data('user-id');
 
-    $('#modal').removeClass('hidden').addClass('opacity-100 pointer-events-auto');
+    $('#modal').removeClass('pointer-events-none').addClass('opacity-100 pointer-events-auto');
     tableTecnologia.settings()[0].oFeatures.bServerSide = true;  // Vuelve a habilitar el server-side
     cargarDatosTecnologia = true;
     tableTecnologia.ajax.reload();
 });
 
 $('#cerrarModal').on('click', function() {
-    $('#modal').addClass('hidden').removeClass('opacity-100 pointer-events-auto');
+    $('#modal').addClass('pointer-events-none').removeClass('opacity-100 pointer-events-auto');
     cargarDatosTecnologia = false;
     tableTecnologia.settings()[0].oFeatures.bServerSide = false;  // Desactiva temporalmente el server-side
     tableTecnologia.clear().draw();  // Vacía la tabla
