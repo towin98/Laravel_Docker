@@ -26,6 +26,18 @@
 
             <div class="max-w-7xl mx-auto p-6 lg:p-8">
                 <h2 class="text-center text-gray-700 font-semibold">HOLA</h2>
+
+                @if (session('success'))
+                    <x-alert id="alert-1" class="mt-2 bg-green-600">
+                        {{ session('success') }}
+                    </x-alert>
+                @endif
+
+                @if (session('error'))
+                    <x-alert id="alert-1" class="mt-2 bg-red-600">
+                        {{ session('error') }}
+                    </x-alert>
+                @endif
             </div>
         </div>
 

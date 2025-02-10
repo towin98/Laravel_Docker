@@ -11,91 +11,32 @@ use App\Jobs\GenerateReportJob;
 use App\Events\JobProgressUpdated;
 use Illuminate\Support\Facades\Log;
 use App\Http\Requests\TecnologiaRequest;
+use App\Imports\TecnologiasImport;
+use App\Jobs\ImportTecnologiasJob;
+use Freshbitsweb\Laratables\Laratables;
 use Illuminate\Support\Facades\Storage;
+use Maatwebsite\Excel\Facades\Excel;
 
 class TecnologiaController extends Controller
 {
     private $carpetaSubirPdf = "pdf_cargados";
 
     /**
-     * Muestra vista de datatable para tecnologias.
+     * Mostrando la página de inicio.
      *
-     * @return \Illuminate\View\View
-     */
-    public function index(){
-        return view('tecnologias.datatable');
+     * @return Illuminate\Http\Response
+     **/
+    public function index()
+    {
+        return view('tecnologias.index');
     }
 
     /**
-     * Método que consulta data de tecnologías por parametros de la paginación.
-     *
-     * @param Request $request
-     * @return \Illuminate\Http\JsonResponse
-     * @throws \Exception Si ocurre un error durante la consulta.
+     * Obteniendo datos paginados con laraTables
      */
-    public function dataTableListar(Request $request)
+    public function dataTableListar()
     {
-        try {
-            $draw = $request->query('draw', 1); // Es un contador propio de datatable
-            $recordsTotal = Tecnologia::count();
-
-            $skip = 0;
-            $take = 10;
-
-            $orderColumn = 'id';
-            $order = 'asc';
-
-            if ($request->filled('skip')) {
-                $skip = $request->skip;
-            }
-            if ($request->filled('take')) {
-                $take = $request->take;
-            }
-            if ($request->filled('orderColumn')) {
-                $orderColumn = $request->orderColumn;
-            }
-            if ($request->filled('order')) {
-                $order = $request->order;
-            }
-
-            $totalRecords = Tecnologia::select(['id', 'nombre', 'descripcion', 'estado', 'pdf'])
-                ->where(function ($query) use ($request) {
-                    if ($request->has('search') && $request->search!= '') {
-                        $query->where('id', 'LIKE', '%'. $request->search. '%')
-                            ->orWhere('nombre', 'LIKE', '%'. $request->search. '%')
-                            ->orWhere('descripcion', 'LIKE', '%'. $request->search. '%')
-                            ->orWhere('estado', 'LIKE', '%'. $request->search. '%');
-                    }
-                });
-
-            $totalRecordsPage = $totalRecords->count();
-
-            $tecnologias = $totalRecords
-                ->skip($skip)
-                ->take($take)
-                ->orderBy($orderColumn, $order)
-                ->get()
-                ->map(function ($tecnologia) {
-                    return [
-                        'id'            => $tecnologia->id,
-                        'nombre'        => $tecnologia->nombre,
-                        'descripcion'   => $tecnologia->descripcion,
-                        'estado'        => $tecnologia->estado,
-                        'pdf'           => $tecnologia->pdf ? Storage::url($tecnologia->pdf) : null
-                    ];
-                });
-
-            return response()->json([
-                "draw" => intval($draw),
-                "recordsTotal" => $recordsTotal,
-                "recordsFiltered" => $totalRecordsPage,
-                "data" => $tecnologias
-            ]);
-        } catch (Exception $e) {
-            return response()->json([
-                'error' => 'Hubo un error al listar los tecnologías.' . $e
-            ], 500);
-        }
+        return Laratables::recordsOf(Tecnologia::class);
     }
 
     public function create()
@@ -147,9 +88,15 @@ class TecnologiaController extends Controller
     {
         try {
             $tecnologia = Tecnologia::findOrFail($id);
-            $nameFileNew = 'tecnologia_'. $id . '_'.date('YmdHis').'.pdf';
+            $tecnologia->update([
+                    'nombre'        => $request->nombre,
+                    'descripcion'   => $request->descripcion,
+                    'estado'        => $request->estado
+                ]
+            );
 
             if ($request->hasFile('pdf')) {
+                $nameFileNew = 'tecnologia_'. $id . '_'.date('YmdHis').'.pdf';
                 // Guardo el archivo en el bucket S3
                 $request->file('pdf')->storeAs($this->carpetaSubirPdf, $nameFileNew);
 
@@ -159,15 +106,11 @@ class TecnologiaController extends Controller
                         Storage::disk('s3')->delete($tecnologia->pdf);
                     }
                 }
-            }
 
-            $tecnologia->update([
-                    'nombre'        => $request->nombre,
-                    'descripcion'   => $request->descripcion,
-                    'estado'        => $request->estado,
-                    'pdf'           => $this->carpetaSubirPdf."/".$nameFileNew
-                ]
-            );
+                $tecnologia->update([
+                    'pdf' => $this->carpetaSubirPdf."/".$nameFileNew
+                ]);
+            }
             return redirect()
                 ->route('tecnologias.show', $id)
                 ->with('success', 'La tecnología ha sido actualizada correctamente');
@@ -395,5 +338,44 @@ class TecnologiaController extends Controller
 
         // Descargando pdf
         event(new JobProgressUpdated(100, Storage::url("tecnologias_pdf/".$nombreArchivo), $nombreArchivo));
+    }
+
+    public function importTecnologias(Request $request)
+    {
+        try {
+            $nombreArchivo = "";
+            switch ($request->tipo) {
+                case 'CSV':
+                    $nombreArchivo = "import_csv_" . date('YmdHis') . ".csv";
+
+                    break;
+                default:
+                    return response()->json([
+                        'message' => 'Validación de Datos',
+                        'errors' => "Formato de archivo no soportado."
+                    ], 409);
+                    break;
+            }
+
+            $archivo = $request->file('file');
+            //Guardando archivo en S3
+            $archivo->storeAs('import', $nombreArchivo);
+
+            $params = [
+                'tipo'          => $request->tipo,
+                'path'          => "import/".$nombreArchivo,
+                'batchSize'     => 400
+            ];
+            ImportTecnologiasJob::dispatch($params);
+
+            return response()->json([
+                'message' => 'Archivo importado correctamente y en espera de ser procesado en segundo plano.',
+            ]);
+        } catch (Exception $e) {
+            return response()->json([
+                'message' => 'Validación de Datos',
+                'errors' => "Error inesperado al importar tecnologías."
+            ], 409);
+        }
     }
 }

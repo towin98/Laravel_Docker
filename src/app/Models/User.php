@@ -50,4 +50,27 @@ class User extends Authenticatable
     public function tecnologias() {
         return $this->belongsToMany(Tecnologia::class, 'tecnologia_user')->withTimestamps();;
     }
+
+    ### LARATABLES
+
+    /**
+     * Additional columns to be loaded for datatables.
+     *
+     * @return array
+     */
+    public static function laratablesAdditionalColumns()
+    {
+        return ['id'];
+    }
+
+    /**
+     * Retorna el html para la columna action
+     *
+     * @param \App\User
+     * @return string
+     */
+    public static function laratablesCustomAsignar($user)
+    {
+        return view('users.optionDataTables.asignar', compact('user'))->render();
+    }
 }

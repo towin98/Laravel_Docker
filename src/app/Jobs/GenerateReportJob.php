@@ -22,7 +22,7 @@ class GenerateReportJob implements ShouldQueue
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
     /**
-     * The parameters for the job (e.g., filters, user ID, etc.).
+     * Parametros de job.
      */
     protected $params;
 
