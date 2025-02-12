@@ -25,11 +25,11 @@ class ChunkTecnologiaJob implements ShouldQueue
 
         foreach ($this->batch as $fila) {
             $data[] = [
-                'nombre' => $fila['nombre'],
-                'descripcion' => $fila['descripcion'],
-                'estado' => $fila['estado'],
-                'created_at' => now(),
-                'updated_at' => now(),
+                'nombre'        => $fila['nombre'],
+                'descripcion'   => $fila['descripcion'],
+                'estado'        => $fila['estado'],
+                'created_at'    => now(),
+                'updated_at'    => now(),
             ];
         }
         Tecnologia::insert($data);

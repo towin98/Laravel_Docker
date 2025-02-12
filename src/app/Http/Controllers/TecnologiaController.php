@@ -3,23 +3,28 @@
 namespace App\Http\Controllers;
 
 use Exception;
-use Carbon\Carbon;
 use App\Models\Tecnologia;
 use Illuminate\Http\Request;
-use Barryvdh\DomPDF\Facade\Pdf;
 use App\Jobs\GenerateReportJob;
-use App\Events\JobProgressUpdated;
-use Illuminate\Support\Facades\Log;
+use App\Http\Requests\TecnologiaPaginationRequest;
 use App\Http\Requests\TecnologiaRequest;
-use App\Imports\TecnologiasImport;
 use App\Jobs\ImportTecnologiasJob;
+use App\Repositories\TecnologiaRepository;
+use App\Services\TecnologiaExportPdfService;
 use Freshbitsweb\Laratables\Laratables;
-use Illuminate\Support\Facades\Storage;
-use Maatwebsite\Excel\Facades\Excel;
 
 class TecnologiaController extends Controller
 {
-    private $carpetaSubirPdf = "pdf_cargados";
+    private $tecnologiaRepository;
+    private $tecnologiaExportPdfService;
+
+    public function __construct(
+        TecnologiaRepository $tecnologiaRepository,
+        TecnologiaExportPdfService $tecnologiaExportPdfService)
+    {
+        $this->tecnologiaRepository = $tecnologiaRepository;
+        $this->tecnologiaExportPdfService = $tecnologiaExportPdfService;
+    }
 
     /**
      * Mostrando la página de inicio.
@@ -33,6 +38,8 @@ class TecnologiaController extends Controller
 
     /**
      * Obteniendo datos paginados con laraTables
+     *
+     * @return array
      */
     public function dataTableListar()
     {
@@ -44,36 +51,33 @@ class TecnologiaController extends Controller
         return view('tecnologias.show');
     }
 
+    /**
+     * Guardar Tecnologia
+     *
+     * @param TecnologiaRequest $request
+     * @return Illuminate\Http\RedirectResponse
+     */
     public function store(TecnologiaRequest $request)
     {
         try {
-            $tecnology = Tecnologia::create([
-                'nombre' => $request->nombre,
-                'descripcion' => $request->descripcion,
-                'estado' => $request->estado
-            ]);
-
-            if ($request->hasFile('pdf')) {
-                $nameFileNew = 'tecnologia_'. $tecnology->id . '_'.date('YmdHis').'.pdf';
-                $request->file('pdf')->storeAs($this->carpetaSubirPdf, $nameFileNew);
-                $tecnology->update([
-                    'pdf' => $this->carpetaSubirPdf."/".$nameFileNew
-                ]);
-            }
-
-            return redirect()->route('laravel-datatable')->with('success', 'Se creo con exito');
+            $this->tecnologiaRepository->store($request->all());
+            return redirect()->route('laravel-datatable')->with('success', 'Se creó con éxito');
         } catch (Exception $e) {
-            return view('tecnologias.show', ['error' => 'Hubo un error al crear.']);
+            return redirect()->back()->with('error', $e->getMessage());
         }
     }
-
-    public function show($id)
+    /**
+     * Undocumented function
+     *
+     * @param [type] $id
+     * @return \Illuminate\Http\RedirectResponse|\Illuminate\View\View
+     */
+    public function show(Tecnologia $tecnologia)
     {
         try {
-            $tecnologia = Tecnologia::findOrFail($id);
             return view('tecnologias.show', compact('tecnologia'));
         } catch (Exception $e) {
-            return redirect()->route('laravel-datatable')->with('error', 'Hubo un error al actualizar la tecnología');
+            return redirect()->route('laravel-datatable')->with('error', 'Hubo un error al consultar la tecnología');
         }
     }
 
@@ -84,101 +88,46 @@ class TecnologiaController extends Controller
      * @param [type] $id
      * @return \Illuminate\Http\RedirectResponse
      */
-    public function update(TecnologiaRequest $request, $id)
+    public function update(TecnologiaRequest $request, Tecnologia $tecnologia)
     {
         try {
-            $tecnologia = Tecnologia::findOrFail($id);
-            $tecnologia->update([
-                    'nombre'        => $request->nombre,
-                    'descripcion'   => $request->descripcion,
-                    'estado'        => $request->estado
-                ]
-            );
-
-            if ($request->hasFile('pdf')) {
-                $nameFileNew = 'tecnologia_'. $id . '_'.date('YmdHis').'.pdf';
-                // Guardo el archivo en el bucket S3
-                $request->file('pdf')->storeAs($this->carpetaSubirPdf, $nameFileNew);
-
-                if ($tecnologia->pdf) {
-                    // Elimino el archivo anterior si es que existe en el bucket S3
-                    if (Storage::disk('s3')->exists($tecnologia->pdf)) {
-                        Storage::disk('s3')->delete($tecnologia->pdf);
-                    }
-                }
-
-                $tecnologia->update([
-                    'pdf' => $this->carpetaSubirPdf."/".$nameFileNew
-                ]);
-            }
-            return redirect()
-                ->route('tecnologias.show', $id)
-                ->with('success', 'La tecnología ha sido actualizada correctamente');
+            $this->tecnologiaRepository->update($request->all(), $tecnologia);
+            return redirect()->route('tecnologias.show', $tecnologia->id)->with('success', 'Actualización exitosa');
         } catch (Exception $e) {
-            return redirect()
-                ->route('tecnologias.show', $id)
-                ->with('error', 'Hubo un error al actualizar la tecnología'. $e);
+            return redirect()->route('tecnologias.show', $tecnologia->id)->with('error', 'No se pudo actualizar la tecnología. Inténtalo nuevamente.');
         }
     }
 
     /**
      * Elimina una tecnologia
      *
-     * @param [type] $id TEcnología
+     * @param [type] $id Tecnología
      * @return \Illuminate\Http\RedirectResponse
      */
-    public function destroy($id)
+    public function delete(Tecnologia $tecnologia)
     {
         try {
-            $tecnologia = Tecnologia::findOrFail($id);
-            if (Storage::disk('s3')->exists($tecnologia->pdf)) {
-                Storage::disk('s3')->delete($tecnologia->pdf);
-            }
-            $tecnologia->delete();
-            return redirect()
-                ->route('laravel-datatable')
-                ->with('success', 'La tecnología ha sido eliminada correctamente');
+            $this->tecnologiaRepository->delete($tecnologia);
+            return redirect()->route('laravel-datatable')->with('success', 'La tecnología ha sido eliminada correctamente');
         } catch (Exception $e) {
-            return redirect()
-                ->route('laravel-datatable')
-                ->with('error', 'Hubo un error al eliminar la tecnología');
+            return redirect()->route('laravel-datatable')->with('error', 'No se pudo eliminar tecnología, Inténtalo nuevamente.');
         }
-    }
-
-    /**
-     * Método que descarga archivo
-     *
-     * @param string $filename Nombre del archivo a descargar
-     * @return void
-     */
-    public function download($filename)
-    {
-        $filePath = "reports/{$filename}";
-
-        if (Storage::exists($filePath)) {
-            return Storage::download($filePath);
-        }
-        abort(404, 'Archivo no encontrado.');
     }
 
     /**
      * Método que genere Excel con porte de tecnologias en segundo plano
      *
      * @param Request $request
-     * @return void
+     * @return \Illuminate\Http\RedirectResponse
      */
     public function reporteBackground(Request $request)
     {
         try {
             $params = ['tipo' => "XLSX"];
             GenerateReportJob::dispatch($params);
-            return redirect()
-                ->route('laravel-datatable')
-                ->with('success', 'El reporte se esta generando en segundo plano.');
+            return redirect()->route('laravel-datatable')->with('success', 'El reporte se esta generando en segundo plano.');
         } catch (Exception $e) {
-            return redirect()
-                ->route('laravel-datatable')
-                ->with('error', 'Hubo un error generar reporte en segundo plano.');
+            return redirect()->route('laravel-datatable')->with('error', 'Hubo un error generar reporte en segundo plano.');
         }
     }
 
@@ -187,54 +136,26 @@ class TecnologiaController extends Controller
      *
      * @param integer $skip
      * @param integer $take
-     * @return void
+     * @return \Symfony\Component\HttpFoundation\BinaryFileResponse|\Illuminate\Http\RedirectResponse
      */
-    public function reportPdf(Request $request)
+    public function reportPdfScreen(TecnologiaPaginationRequest $request)
     {
         try {
-            $htmlTable = "";
+            $orderColumn = $request->filled('orderColumn') ? $request->orderColumn : 'id';
+            $order = $request->filled('order') ? $request->order : 'asc';
 
-            $orderColumn = 'id';
-            $order = 'asc';
-            if ($request->filled('orderColumn')) {
-                $orderColumn = $request->orderColumn;
-            }
-            if ($request->filled('order')) {
-                $order = $request->order;
-            }
+            $request->merge([
+                'orderColumn' => $orderColumn,
+                'order'       => $order,
+            ]);
 
-            $data = Tecnologia::select(['id', 'nombre', 'descripcion', 'estado'])
-                ->where(function ($query) use ($request) {
-                    if ($request->has('search') && $request->search!= '') {
-                        $query->where('id', 'LIKE', '%'. $request->search. '%')
-                            ->orWhere('nombre', 'LIKE', '%'. $request->search. '%')
-                            ->orWhere('descripcion', 'LIKE', '%'. $request->search. '%')
-                            ->orWhere('estado', 'LIKE', '%'. $request->search. '%');
-                    }
-                })
-                ->skip($request->skip)
-                ->take($request->take)
-                ->orderBy($orderColumn, $order)
-                ->get();
-
-            foreach ($data as $registro) {
-                $htmlTable .= '
-                    <tr>
-                        <td>' . $registro->id . '</td>
-                        <td>' . $registro->nombre . '</td>
-                        <td>' . $registro->descripcion . '</td>
-                        <td>' . $registro->estado . '</td>
-                    </tr>';
-            }
-
-            // Renderizar la vista como PDF
-            $pdf = Pdf::loadView('pdf.tecnologias', ['tabla' => $htmlTable]);
-            // Descargando pdf
-            return $pdf->download('TECNOLOGIAS_PAGINADO' . date('YmdHis') . '.pdf');
+            $data = $this->tecnologiaRepository->obtenerDataPaginacion($request->all());
+            return $this->tecnologiaExportPdfService->reporteScreen($data);
         } catch (Exception $e) {
-            return redirect()
-                ->route('laravel-datatable')
-                ->with('error', 'Hubo un error al reporte PDF.' . $e);
+            return response()->json([
+                'message' => 'Validación de Datos',
+                'errors' => "Error inesperado al generar reporte pdf: ". $e
+            ], 409);
         }
     }
 
@@ -242,19 +163,13 @@ class TecnologiaController extends Controller
      * Metodo que genera reporte en pdf de la pagina actual en segundo plano.
      *
      * @param Request $request
-     * @return void
+     * @return \Illuminate\Http\RedirectResponse
      */
-    public function reportPdfBackground(Request $request)
+    public function reportPdfBackground(TecnologiaPaginationRequest $request)
     {
         try {
-            $orderColumn = 'id';
-            $order = 'asc';
-            if ($request->filled('orderColumn')) {
-                $orderColumn = $request->orderColumn;
-            }
-            if ($request->filled('order')) {
-                $order = $request->order;
-            }
+            $orderColumn = $request->filled('orderColumn') ? $request->orderColumn : 'id';
+            $order = $request->filled('order') ? $request->order : 'asc';
 
             $params = [
                 'tipo'        => "PDF",
@@ -278,68 +193,11 @@ class TecnologiaController extends Controller
     }
 
     /**
-     * Función que genera un reporte PDF de tecnologías en segundo plano, procesando los datos en bloques para evitar sobrecargar la memoria.
+     * Método que permite importar tecnologías desde un archivo.
      *
-     * @param array $params
-     * @return void
+     * @param Request $request
+     * @return \Illuminate\Http\JsonResponse
      */
-    public function logicaPdf(array $params)
-    {
-        ini_set('memory_limit', '1024M');
-
-        $registrosProcesados = 0; // Contador de registros procesados
-        $progresoEmitido = 0; // Progreso emitido para el evento
-
-        $htmlTable = ''; // Variable para construir solo las filas de la tabla
-
-        $tecnologias = Tecnologia::select(['id', 'nombre', 'descripcion', 'estado'])
-            ->where(function ($query) use ($params) {
-                if ($params['search']!= '') {
-                    $query->where('id', 'LIKE', '%'. $params['search']. '%')
-                        ->orWhere('nombre', 'LIKE', '%'. $params['search']. '%')
-                        ->orWhere('descripcion', 'LIKE', '%'. $params['search']. '%')
-                        ->orWhere('estado', 'LIKE', '%'. $params['search']. '%');
-                }
-            })
-            ->skip($params['skip'])
-            ->take($params['take'])
-            ->orderBy($params['orderColumn'], $params['order'])
-            ->get();
-
-        // Log::info("Tamaño:".$tecnologias->count());
-
-        foreach ($tecnologias as $registro) {
-            // Log::info($registro);
-            $registrosProcesados++;
-            $htmlTable .= '
-                    <tr>
-                        <td>' . $registro->id . '</td>
-                        <td>' . $registro->nombre . '</td>
-                        <td>' . $registro->descripcion . '</td>
-                        <td>' . $registro->estado . '</td>
-                    </tr>';
-
-            // Emitir evento cada 5%
-            $nuevoProgreso = floor(($registrosProcesados / $params['take']) * 92);
-            if ($nuevoProgreso >= ($progresoEmitido + 5)) {
-                $progresoEmitido = $nuevoProgreso;
-                event(new JobProgressUpdated($progresoEmitido));
-            }
-        }
-
-        $content = PDF::loadView('pdf.tecnologias', ['tabla' => $htmlTable])->output();
-        $nombreArchivo = "reporte_pdf_" . date('YmdHis') . ".pdf";
-        // Storage::disk('public')->put($nombreArchivo, $content);
-        //Guardando archivo en minio
-        Storage::put('tecnologias_pdf/'.$nombreArchivo, $content);
-
-        //Libero memoria
-        unset($htmlTable);
-
-        // Descargando pdf
-        event(new JobProgressUpdated(100, Storage::url("tecnologias_pdf/".$nombreArchivo), $nombreArchivo));
-    }
-
     public function importTecnologias(Request $request)
     {
         try {
@@ -347,7 +205,6 @@ class TecnologiaController extends Controller
             switch ($request->tipo) {
                 case 'CSV':
                     $nombreArchivo = "import_csv_" . date('YmdHis') . ".csv";
-
                     break;
                 default:
                     return response()->json([
@@ -357,9 +214,7 @@ class TecnologiaController extends Controller
                     break;
             }
 
-            $archivo = $request->file('file');
-            //Guardando archivo en S3
-            $archivo->storeAs('import', $nombreArchivo);
+            $request->file('file')->storeAs('import', $nombreArchivo);
 
             $params = [
                 'tipo'          => $request->tipo,

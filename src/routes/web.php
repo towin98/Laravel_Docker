@@ -33,16 +33,15 @@ Route::middleware('auth')->group(function () {
     ###
 
     Route::post('/reporte-background-excel', [TecnologiaController::class, 'reporteBackground'])->name('tecnologias.reportbackground');
-    Route::get('/download-report/{filename}', [TecnologiaController::class, 'download'])->name('download.report');
-    Route::get('/generar-pdf-background', [TecnologiaController::class, 'reportPdfBackground'])->name('tecnologias.reportPdfBackground');
-    Route::get('/generar-pdf', [TecnologiaController::class, 'reportPdf'])->name('tecnologias.reportPdf');
+    Route::get('/reporte-pdf-background', [TecnologiaController::class, 'reportPdfBackground'])->name('tecnologias.reportPdfBackground');
+    Route::get('/reporte-pdf-screen', [TecnologiaController::class, 'reportPdfScreen'])->name('tecnologias.reportPdf');
 
     ## ENDPOINT CRUD
     Route::get('/tecnologia-nueva', [TecnologiaController::class, 'create'])->name('tecnologia.create');
     Route::get('/tecnologias/{tecnologia}', [TecnologiaController::class, 'show'])->name('tecnologias.show');
     Route::put('/tecnologias/{tecnologia}', [TecnologiaController::class, 'update'])->name('tecnologias.update');
     Route::post('/tecnologias', [TecnologiaController::class,'store'])->name('tecnologias.store');
-    Route::delete('/tecnologias/{tecnologia}', [TecnologiaController::class, 'destroy'])->name('tecnologias.destroy');
+    Route::delete('/tecnologias/{tecnologia}', [TecnologiaController::class, 'delete'])->name('tecnologias.destroy');
     ##
 
     ##SUBIR TECNOLOGIAS
