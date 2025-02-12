@@ -146,7 +146,7 @@
 
         document.addEventListener("DOMContentLoaded", function() {
             const btnReportePdfScreen = document.getElementById('reporte-pdf-screen');
-            btnReportePdfScreen.addEventListener('click', generarReportePdfPaginado);
+            btnReportePdfScreen.addEventListener('click', reportePdfScreen);
 
             const btnReportePdfBackground = document.getElementById('reporte-pdf-background');
             btnReportePdfBackground.addEventListener('click', generarReporteBackground);
@@ -163,6 +163,9 @@
 
         $(document).ready(function() {
             let table = new DataTable('#tecnologias-table', {
+                search: {
+                    return: true
+                },
                 processing: true,
                 serverSide: true,
                 ajax: {
@@ -181,11 +184,11 @@
             });
         });
 
-        function generarReportePdfPaginado(){
+        function reportePdfScreen(){
             parametrosPaginacion('#tecnologias-table', columns);
 
             document.getElementById('loading').style.display = 'flex';
-            fetch(`/generar-pdf?skip=${skip}&take=${take}&search=${searchValue}&orderColumn=${orderColumn}&order=${orderDescAsc}`)
+            fetch(`/reporte-pdf-screen?skip=${skip}&take=${take}&search=${searchValue}&orderColumn=${orderColumn}&order=${orderDescAsc}`)
                 .then(response => response.blob())
                 .then(blob  => {
                     let url = window.URL.createObjectURL(blob);
@@ -209,7 +212,7 @@
         function generarReporteBackground() {
             parametrosPaginacion('#tecnologias-table', columns);
             document.getElementById('loading').style.display = 'flex';
-            fetch(`/generar-pdf-background?skip=${skip}&take=${take}&search=${searchValue}&orderColumn=${orderColumn}&order=${orderDescAsc}`)
+            fetch(`/reporte-pdf-background?skip=${skip}&take=${take}&search=${searchValue}&orderColumn=${orderColumn}&order=${orderDescAsc}`)
                 .then(response => response.json())
                 .then(dataGet => {
                     document.getElementById('loading').style.display = 'none';
