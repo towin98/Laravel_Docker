@@ -7,7 +7,7 @@ use App\Models\Tecnologia;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 
-class TecnologiaRepository
+class TecnologiaRepository extends BaseRepository
 {
     protected $model;
     protected $carpetaSubirPdf = 'pdf_cargados';
