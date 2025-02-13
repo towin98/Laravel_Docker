@@ -27,14 +27,19 @@ Route::middleware('auth')->group(function () {
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 
-    ### DATATABLE
+    ## DATATABLE
     Route::get('/dashboard', [TecnologiaController::class, 'index'])->name('laravel-datatable');
     Route::get('/laravel-datatables-filter', [TecnologiaController::class, 'dataTableListar'])->name('datatables.index');
-    ###
+    ##
 
+    ## REPORTES
     Route::post('/reporte-background-excel', [TecnologiaController::class, 'reporteBackground'])->name('tecnologias.reportbackground');
     Route::get('/reporte-pdf-background', [TecnologiaController::class, 'reportPdfBackground'])->name('tecnologias.reportPdfBackground');
     Route::get('/reporte-pdf-screen', [TecnologiaController::class, 'reportPdfScreen'])->name('tecnologias.reportPdf');
+
+    Route::get('/view-pdf-minIo', [TecnologiaController::class, 'viewPdfMinIo']);
+    ##
+
 
     ## ENDPOINT CRUD
     Route::get('/tecnologia-nueva', [TecnologiaController::class, 'create'])->name('tecnologia.create');
@@ -44,7 +49,7 @@ Route::middleware('auth')->group(function () {
     Route::delete('/tecnologias/{tecnologia}', [TecnologiaController::class, 'delete'])->name('tecnologias.destroy');
     ##
 
-    ##SUBIR TECNOLOGIAS
+    ## SUBIR TECNOLOGIAS
     Route::post('/tecnologias-import', [TecnologiaController::class,'importTecnologias'])->name('tecnologias.import');
     ##
 
