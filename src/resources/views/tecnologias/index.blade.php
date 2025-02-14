@@ -114,9 +114,9 @@
     </div>
 
     <!-- Progress Bar -->
-    <div data-dialog-backdrop="modal" data-dialog-backdrop-close="true" id="modal"
+    <div id="modal-progress-bar"
         class="pointer-events-none fixed inset-0 z-[999] grid h-screen w-screen place-items-center bg-black bg-opacity-60 opacity-0 backdrop-blur-sm transition-opacity duration-300">
-        <div data-dialog="modal" class="relative m-4 p-4 w-2/5 min-w-[40%] max-w-[40%] rounded-lg bg-white shadow-sm">
+        <div data-dialog="modal" class="relative m-4 p-4 md:w-1/2 w-11/12 rounded-lg bg-white shadow-sm">
             <div class="flex shrink-0 items-center pb-4 text-xl font-medium text-slate-800">
                 Generando reporte
             </div>
@@ -129,8 +129,7 @@
                 </div>
             </div>
             <div class="flex shrink-0 flex-wrap items-center pt-4 justify-end">
-                <button data-dialog-close="true"
-                    class="rounded-md border border-transparent py-2 px-4 text-center text-sm transition-all text-slate-600 hover:bg-slate-100 focus:bg-slate-100 active:bg-slate-100 disabled:pointer-events-none disabled:opacity-50 disabled:shadow-none"
+                <button id="modal-close-progress-bar" class="rounded-md border border-transparent py-2 px-4 text-center text-sm transition-all text-slate-600 hover:bg-slate-100 focus:bg-slate-100 active:bg-slate-100 disabled:pointer-events-none disabled:opacity-50 disabled:shadow-none"
                     type="button">
                     Cerrar
                 </button>
@@ -140,7 +139,7 @@
 
     <!-- Modal para importar tecnologías -->
     <div id="modal-import" class="pointer-events-none fixed inset-0 z-[999] grid h-screen w-screen place-items-center bg-black bg-opacity-60 opacity-0 backdrop-blur-sm transition-opacity duration-300">
-        <div class="relative m-4 p-4 w-2/5 min-w-[40%] max-w-[40%] rounded-lg bg-white shadow-sm">
+        <div class="relative m-4 p-4 md:w-1/2 w-11/12 rounded-lg bg-white shadow-sm">
             <div class="flex shrink-0 justify-center items-center pb-4 text-xl font-medium text-slate-800">
                 Importar tecnologías
             </div>
@@ -295,7 +294,7 @@
                     ProgressBarSize.style.width = '5%';
                     ProgressBarSize.innerHTML = '1 %'
 
-                    document.getElementById('modal').classList.remove('pointer-events-none', 'opacity-0');
+                    document.getElementById('modal-progress-bar').classList.remove('pointer-events-none', 'opacity-0');
 
                     if (!isSubscribed) {
                         window.Echo.channel('channel-name').listen('JobProgressUpdated', function(data) {
@@ -304,6 +303,7 @@
 
                             if (data.path) {
                                 window.open(data.path, '_blank');
+                                document.getElementById('modal-progress-bar').classList.add('pointer-events-none', 'opacity-0');
                             }
                         });
                         isSubscribed = true;
@@ -404,8 +404,6 @@
                     throw new Error('Error al generar vista del pdf');
                 }
                 const datos = await respuesta.json();
-
-                console.log(datos);
                 document.getElementById('loading').style.display = 'none';
 
                 //redireccionando a una nueva ventana

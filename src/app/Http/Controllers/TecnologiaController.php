@@ -179,6 +179,7 @@ class TecnologiaController extends Controller
             $order = $request->filled('order') ? $request->order : 'asc';
 
             $params = [
+                'expiration'  => 1,
                 'tipo'        => "PDF",
                 'skip'        => $request->skip,
                 'take'        => $request->take,
@@ -186,6 +187,14 @@ class TecnologiaController extends Controller
                 'order'       => $order,
                 'search'      => $request->search
             ];
+
+            if ($request->filled('dateDesde')) {
+                $params['dateDesde'] = $request->dateDesde;
+            }
+
+            if ($request->filled('dateHasta')) {
+                $params['dateHasta'] = $request->dateHasta;
+            }
             GenerateReportJob::dispatch($params);
 
             return response()->json([
