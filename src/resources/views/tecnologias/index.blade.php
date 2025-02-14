@@ -385,5 +385,37 @@
             }
         }
     </script>
+
+    <script type="module">
+
+        document.getElementById('tecnologias-table').addEventListener('click', async function(event) {
+            if (event.target.classList.contains('view-pdf-technology-uploaded')) {
+                viewPdfMinIo(event);
+            }
+        });
+
+        async function viewPdfMinIo(event){
+            try {
+                document.getElementById('loading').style.display = 'flex';
+                const pathFile = event.target.getAttribute('data-path');
+                const respuesta = await fetch(`/view-pdf-minIo?pathFile=${pathFile}`);
+
+                if (!respuesta.ok) {
+                    throw new Error('Error al generar vista del pdf');
+                }
+                const datos = await respuesta.json();
+
+                console.log(datos);
+                document.getElementById('loading').style.display = 'none';
+
+                //redireccionando a una nueva ventana
+                window.open(datos.url, '_blank');
+            } catch (error) {
+                document.getElementById('loading').style.display = 'none';
+                console.error('Hubo un error:', error);
+                Swal.fire({ title: 'Error', text: datos.message , icon: 'error' });
+            }
+        }
+    </script>
     @endpush
 </x-app-layout>

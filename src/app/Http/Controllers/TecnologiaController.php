@@ -6,12 +6,12 @@ use Exception;
 use App\Models\Tecnologia;
 use Illuminate\Http\Request;
 use App\Jobs\GenerateReportJob;
-use App\Http\Requests\TecnologiaPaginationRequest;
-use App\Http\Requests\TecnologiaRequest;
 use App\Jobs\ImportTecnologiasJob;
+use Freshbitsweb\Laratables\Laratables;
+use App\Http\Requests\TecnologiaRequest;
 use App\Repositories\TecnologiaRepository;
 use App\Services\TecnologiaExportPdfService;
-use Freshbitsweb\Laratables\Laratables;
+use App\Http\Requests\TecnologiaPaginationRequest;
 
 class TecnologiaController extends Controller
 {
@@ -238,6 +238,26 @@ class TecnologiaController extends Controller
                 'message' => 'Validación de Datos',
                 'errors' => "Error inesperado al importar tecnologías."
             ], 409);
+        }
+    }
+
+    /**
+     * Retorna Url temporal de archivo en s3
+     *
+     * @param Request $request
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function viewPdfMinIo(Request $request)
+    {
+        try {
+            return response()->json([
+                'url' => $this->tecnologiaRepository->getTemporaryUrl($request->pathFile, 1)
+            ]);
+        } catch (Exception $e) {
+            return response()->json([
+                'message' => 'Error inesperado al generar link.',
+                'errors' => $e->getMessage()
+            ], 500);
         }
     }
 }

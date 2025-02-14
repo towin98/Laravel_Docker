@@ -95,7 +95,7 @@ class Tecnologia extends Model
             $texto                   = substr($tecnologia->descripcion, 0, 50);
 
             $tecnologia->descripcion = strlen($tecnologia->descripcion) > 50 ? $texto . ' ...' : $texto;
-            $tecnologia->pdf         = $tecnologia->pdf ? Storage::url($tecnologia->pdf) : null;
+            $tecnologia->pdf         = $tecnologia->pdf ?? null;
             return $tecnologia;
         });
     }
