@@ -126,6 +126,12 @@ class TecnologiaRepository
                         ->orWhere('descripcion', 'LIKE', '%' . $params['search'] . '%')
                         ->orWhere('estado', 'LIKE', '%' . $params['search'] . '%');
                 })
+                ->when(array_key_exists('dateDesde', $params) && !empty($params['dateDesde']) &&
+                    array_key_exists('dateHasta', $params) && !empty($params['dateHasta']), function($query) use ($params){
+                        $query->whereBetween('created_at', [
+                            $params['dateDesde']  .' 00:00:00', $params['dateHasta'] .' 23:59:59'
+                        ]);
+                })
                 ->skip($params['skip'])
                 ->take($params['take'])
                 ->orderBy($params['orderColumn'], $params['order'])

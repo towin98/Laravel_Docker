@@ -1,10 +1,25 @@
 <x-app-layout>
     @push('styles')
     <link rel="stylesheet" href="https://cdn.datatables.net/2.2.1/css/dataTables.dataTables.css">
+    <link rel="stylesheet" href="https://code.jquery.com/ui/1.14.1/themes/base/jquery-ui.css">
+
     <style>
         .dt-length select{
             width: 64px !important;
         }
+
+        /* Agregando estilos al modal de datapicker */
+        .ui-datepicker select.ui-datepicker-year {
+            width: 48%;
+            padding-top: 0px;
+            padding-bottom: 0px;
+        }
+
+        .ui-datepicker select.ui-datepicker-month {
+            padding-top: 0px;
+            padding-bottom: 0px;
+        }
+        /* fin estilos datepicker */
     </style>
     @endpush
     <div class="container mx-auto flex flex-col rounded-lg bg-white shadow-sm p-2 my-6 border border-slate-200">
@@ -27,9 +42,9 @@
             @endif
         </div>
 
-        <div class="flex overflow-x-auto">
+        <div class="flex overflow-x-auto py-2">
             <a href="{{ route('tecnologia.create') }}"
-                class="inline-flex items-center mx-1 px-4 mb-2 py-2 bg-gray-800 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-gray-700 focus:bg-gray-700 active:bg-gray-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 transition ease-in-out duration-150">
+                class="inline-flex items-center mx-1 px-4 mb-2 py-2 bg-blue-500 border rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-blue-700 transition ease-in-out duration-150">
                 Nueva tecnología
             </a>
 
@@ -37,43 +52,65 @@
                 @csrf <!-- Token de protección contra CSRF -->
                 <input type="hidden" name="estado" value="ACTIVO"> <!-- Parámetro enviado -->
                 <button type="submit"
-                    class="inline-flex items-center mx-1 px-4 mb-2 py-2 bg-green-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-green-700 focus:bg-green-700 active:bg-green-900 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 transition ease-in-out duration-150">
+                    class="inline-flex items-center mx-1 px-4 mb-2 py-2 bg-green-600 border rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-green-700 transition ease-in-out duration-150">
                     <i class="fa-regular fa-file-excel" title="Reporte Excel Background Todos"></i>Background Todos
                 </button>
             </form>
 
             <button id="reporte-pdf-screen"
-                class="inline-flex items-center mx-1 px-4 mb-2 py-2 bg-red-700 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-red-700 focus:bg-red-700 active:bg-red-900 focus:outline-none focus:ring-2 focus:ring-gray-200 focus:ring-offset-2 transition ease-in-out duration-150"
+                class="inline-flex items-center mx-1 px-4 mb-2 py-2 bg-red-700 border rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-red-900 transition ease-in-out duration-150"
                 type="button" title="Reporte PDF - Screen">
                 <i class="fa-regular fa-file-pdf"></i>Screen
             </button>
 
             <button data-dialog-target="modal" id="reporte-pdf-background"
-                class="inline-flex items-center mx-1 px-4 mb-2 py-2 bg-red-700 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-red-700 focus:bg-red-700 active:bg-red-900 focus:outline-none focus:ring-2 focus:ring-gray-200 focus:ring-offset-2 transition ease-in-out duration-150"
+                class="inline-flex items-center mx-1 px-4 mb-2 py-2 bg-red-700 border rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-red-900 transition ease-in-out duration-150"
                 type="button" title="Reporte PDF - Background">
                 <i class="fa-regular fa-file-pdf"></i>Background
             </button>
 
             <button id="importTecnologias"
-                    class="inline-flex items-center mx-1 px-4 mb-2 py-2 bg-green-700 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-green-700 focus:bg-green-700 active:bg-green-900 focus:outline-none focus:ring-2 focus:ring-gray-200 focus:ring-offset-2 transition ease-in-out duration-150"
+                    class="inline-flex items-center mx-1 px-4 mb-2 py-2 bg-green-700 border rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-green-700 transition ease-in-out duration-150"
                     type="button"
                     title="Subir Archivo plano CSV">
                 <i class="fa-solid fa-upload w-4 h-4 flex justify-center items-center" aria-hidden="true"></i>
             </button>
         </div>
 
-        <table id="tecnologias-table" class="display " style="width:100%">
-            <thead>
-                <tr>
-                    <th>ID</th>
-                    <th>NOMBRE</th>
-                    <th>DESCRIPCION</th>
-                    <th>ESTADO</th>
-                    <th></th>
-                    <th></th>
-                </tr>
-            </thead>
-        </table>
+        <div class="mt-2 md:flex justify-center">
+            <div class="mx-2">
+                <label for="dateDesde" class="block mb-2 text-sm text-slate-700">Seleccione fecha desde</label>
+                <input type="text" id="dateDesde"
+                    class="text-center w-full bg-transparent placeholder:text-slate-400 text-slate-700 text-sm border border-slate-200 rounded-md px-3 py-2 transition duration-300 ease focus:outline-none focus:border-slate-400 hover:border-slate-300 shadow-sm focus:shadow"
+                    autocomplete="off">
+            </div>
+            <div class="mx-2">
+                <label for="dateHasta" class="block mb-2 text-sm text-slate-700">Seleccione fecha hasta</label>
+                <input type="text"
+                    id="dateHasta"
+                    class="text-center w-full bg-transparent placeholder:text-slate-400 text-slate-700 text-sm border border-slate-200 rounded-md px-3 py-2 transition duration-300 ease focus:outline-none focus:border-slate-400 hover:border-slate-300 shadow-sm focus:shadow"
+                    autocomplete="off"></p>
+            </div class="mx-2">
+            <div class="mx-2 flex items-end justify-end mt-2 md:mt-0">
+                <button id="btnBuscar" class="bg-blue-500 text-white px-4 py-2 rounded h-fit">Buscar</button>
+            </div>
+        </div>
+
+        <div class="overflow-x-auto">
+            <table id="tecnologias-table" class="display" style="width:100%">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>NOMBRE</th>
+                        <th>DESCRIPCION</th>
+                        <th>ESTADO</th>
+                        <th>CREADO</th>
+                        <th></th>
+                        <th></th>
+                    </tr>
+                </thead>
+            </table>
+        </div>
     </div>
 
     <!-- Progress Bar -->
@@ -139,29 +176,43 @@
     @push('scripts')
     <script src="{{ asset('js/dataTables/jquery-3.7.1.js') }}"></script>
     <script src="{{ asset('js/dataTables/datatables.js') }}"></script>
+    <script src="https://code.jquery.com/ui/1.14.1/jquery-ui.js"></script>
 
     <script type="module">
-        import { languageData,  parametrosPaginacion, searchValue, orderColumn, orderDescAsc, skip, take } from '/js/dataTables/commons.js';
+        import { languageData, datePickerlanguageEs, parametrosPaginacion, searchValue, orderColumn, orderDescAsc, skip, take } from '/js/dataTables/commons.js';
         let isSubscribed = false;
-
-        document.addEventListener("DOMContentLoaded", function() {
-            const btnReportePdfScreen = document.getElementById('reporte-pdf-screen');
-            btnReportePdfScreen.addEventListener('click', reportePdfScreen);
-
-            const btnReportePdfBackground = document.getElementById('reporte-pdf-background');
-            btnReportePdfBackground.addEventListener('click', generarReporteBackground);
-        });
 
         const columns = [
             { name: 'id' },
             { name: 'nombre' },
             { name: 'descripcion' },
             { name: 'estado' },
+            { name: 'created_at' },
             { name: 'descargar', orderable: false, searchable: false},
             { name: 'action', orderable: false, searchable: false},
         ];
 
-        $(document).ready(function() {
+        document.addEventListener("DOMContentLoaded", function() {
+            document.getElementById('reporte-pdf-screen').addEventListener('click', reportePdfScreen);
+            document.getElementById('reporte-pdf-background').addEventListener('click', generarReporteBackground);
+            document.getElementById('btnBuscar').addEventListener('click', searchRangeDate);
+
+            /**
+             * Inicializando datepicker y configuracion
+             */
+            $.datepicker.regional['es'] = datePickerlanguageEs;
+            $.datepicker.setDefaults($.datepicker.regional['es']);
+
+            const configDatePicker = {
+                changeYear: true,
+                changeMonth: true,
+                dateFormat: "yy-mm-dd",
+                maxDate: 0,
+            };
+
+            $("#dateDesde").datepicker(configDatePicker);
+            $("#dateHasta").datepicker(configDatePicker);
+
             let table = new DataTable('#tecnologias-table', {
                 search: {
                     return: true
@@ -170,6 +221,12 @@
                 serverSide: true,
                 ajax: {
                     url: "{{ route('datatables.index') }}",
+                    data: function (d) {
+                        if ($('#dateDesde').val() != "" && $('#dateHasta').val() != "") {
+                            d.dateDesde = $('#dateDesde').val(); // Capturar fecha desde
+                            d.dateHasta = $('#dateHasta').val(); // Capturar fecha hasta
+                        }
+                    },
                     dataSrc: function (json) {
                         document.getElementById('loading').style.display = 'none'; // Ocultar el loading cuando los datos se cargan
                         return json.data;
@@ -184,11 +241,28 @@
             });
         });
 
+        function searchRangeDate(){
+            let messageErros = "";
+            if ($('#dateDesde').val() == "" && $('#dateHasta').val() != "") {
+                messageErros += " - La fecha desde no puede ser vacía."
+            }
+
+            if ($('#dateHasta').val() == "" && $('#dateDesde').val() != "") {
+                messageErros += " - La fecha hasta no puede ser vacía."
+            }
+
+            if (messageErros != ""){
+                Swal.fire({ title: 'Verifique!', text: messageErros , icon: 'info' });
+                return;
+            }
+            $('#tecnologias-table').DataTable().ajax.reload(); // Recargar la tabla con los nuevos filtros
+        }
+
         function reportePdfScreen(){
             parametrosPaginacion('#tecnologias-table', columns);
 
             document.getElementById('loading').style.display = 'flex';
-            fetch(`/reporte-pdf-screen?skip=${skip}&take=${take}&search=${searchValue}&orderColumn=${orderColumn}&order=${orderDescAsc}`)
+            fetch(`/reporte-pdf-screen?skip=${skip}&take=${take}&search=${searchValue}&orderColumn=${orderColumn}&order=${orderDescAsc}${getQueryUrlRangoFechas()}`)
                 .then(response => response.blob())
                 .then(blob  => {
                     let url = window.URL.createObjectURL(blob);
@@ -212,7 +286,7 @@
         function generarReporteBackground() {
             parametrosPaginacion('#tecnologias-table', columns);
             document.getElementById('loading').style.display = 'flex';
-            fetch(`/reporte-pdf-background?skip=${skip}&take=${take}&search=${searchValue}&orderColumn=${orderColumn}&order=${orderDescAsc}`)
+            fetch(`/reporte-pdf-background?skip=${skip}&take=${take}&search=${searchValue}&orderColumn=${orderColumn}&order=${orderDescAsc}${getQueryUrlRangoFechas()}`)
                 .then(response => response.json())
                 .then(dataGet => {
                     document.getElementById('loading').style.display = 'none';
@@ -241,6 +315,17 @@
                     alert('Error al generar el reporte');
                     document.getElementById('loading').style.display = 'none';
                 });
+        }
+
+        /**
+         * Crear query string para consultar por rango de fechas.
+         */
+        function getQueryUrlRangoFechas(){
+            let filterRangoFechas = "";
+            if ($('#dateDesde').val() != "" && $('#dateHasta').val() != "") {
+                filterRangoFechas += `&dateDesde=${$('#dateDesde').val()}&dateHasta=${$('#dateHasta').val()}`;
+            }
+            return filterRangoFechas;
         }
     </script>
 

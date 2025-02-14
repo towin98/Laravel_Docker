@@ -41,9 +41,16 @@ class TecnologiaController extends Controller
      *
      * @return array
      */
-    public function dataTableListar()
+    public function dataTableListar(Request $request)
     {
-        return Laratables::recordsOf(Tecnologia::class);
+        return Laratables::recordsOf(Tecnologia::class, function($query) use ($request)
+        {
+            return $query->when($request->filled('dateDesde') && $request->filled('dateHasta'), function($query) use ($request){
+                $query->whereBetween('created_at', [
+                    $request->dateDesde . ' 00:00:00', $request->dateHasta . ' 23:59:59'
+                ]);
+            });
+        });
     }
 
     public function create()
