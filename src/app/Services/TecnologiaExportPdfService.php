@@ -84,8 +84,7 @@ class TecnologiaExportPdfService
 
             $nombreArchivo = "reporte_pdf_" . date('YmdHis') . ".pdf";
             Storage::put('tecnologias_pdf/' . $nombreArchivo, $content);
-            event(new JobProgressUpdated(100, Storage::url("tecnologias_pdf/" . $nombreArchivo), $nombreArchivo));
-
+            event(new JobProgressUpdated(100, $this->tecnologiaRepository->getTemporaryUrl("tecnologias_pdf/" . $nombreArchivo, $params['expiration']), $nombreArchivo));
         } catch (Exception $e) {
             throw new Exception("Error al generar Pdf: " . $e->getMessage());
         }

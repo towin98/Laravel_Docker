@@ -5,11 +5,9 @@ use App\Models\Tecnologia;
 use App\Exports\TecnologiaExport;
 use Illuminate\Support\Facades\Storage;
 use Maatwebsite\Excel\Facades\Excel;
-use Maatwebsite\Excel\Excel as Excell;
 
 class TecnologiaExportExcelService
 {
-
     public function export(array $params)
     {
         // $data[] = [];

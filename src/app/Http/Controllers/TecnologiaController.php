@@ -41,9 +41,16 @@ class TecnologiaController extends Controller
      *
      * @return array
      */
-    public function dataTableListar()
+    public function dataTableListar(Request $request)
     {
-        return Laratables::recordsOf(Tecnologia::class);
+        return Laratables::recordsOf(Tecnologia::class, function($query) use ($request)
+        {
+            return $query->when($request->filled('dateDesde') && $request->filled('dateHasta'), function($query) use ($request){
+                $query->whereBetween('created_at', [
+                    $request->dateDesde . ' 00:00:00', $request->dateHasta . ' 23:59:59'
+                ]);
+            });
+        });
     }
 
     public function create()
@@ -172,6 +179,7 @@ class TecnologiaController extends Controller
             $order = $request->filled('order') ? $request->order : 'asc';
 
             $params = [
+                'expiration'  => 1,
                 'tipo'        => "PDF",
                 'skip'        => $request->skip,
                 'take'        => $request->take,
@@ -179,6 +187,14 @@ class TecnologiaController extends Controller
                 'order'       => $order,
                 'search'      => $request->search
             ];
+
+            if ($request->filled('dateDesde')) {
+                $params['dateDesde'] = $request->dateDesde;
+            }
+
+            if ($request->filled('dateHasta')) {
+                $params['dateHasta'] = $request->dateHasta;
+            }
             GenerateReportJob::dispatch($params);
 
             return response()->json([
